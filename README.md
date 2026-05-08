@@ -112,9 +112,43 @@ Během lokálního vývoje bylo spojení podrobeno testům s nástrojem `tc nete
 1. **Efektivita Go-Back-N na ztrátových linkách:** Přestože GBN plní účel a je spolehlivý, na linkách s velkým zpožděním (vysoké RTT) a velkou ztrátovostí je neefektivní. Na rozdíl od mechanismu Selective Repeat, který by přeposílal jen konkrétní ztracené pakety, zahazuje server u GBN všechny následující pakety (byť došly v pořádku), a klient musí poslat zbytečně celé okno znovu.
 2. **Statické časovače (Fixed Timers):** Retransmisní timeout lokálního rychlého časovače (0.4s) je konfigurován staticky. Implementace nemá zabudovaný dynamický výpočet RTT (Round Trip Time), jako to dělá TCP. Může tak docházet k přehnaným retransmisím na extrémně pomalých (zpožděných) spojích, nebo zbytečnému čekání na rychlých lokálních sítích.
 4. **Server obsluhuje právě jeden přenos:** Po úspěšném či neúspěšném přenosu jednoho byte-streamu se serverový proces korektně ukončí (dle zadání nevyžaduje obsluhu více klientů paralelně).
+
 ---
 
-## 10. Spuštění testů
+## 10. Návod k použití (Spuštění)
+
+### Překlad
+Program je napsán v jazyce Python 3. K vytvoření spustitelného souboru `ipk-rdt` slouží přiložený `Makefile`:
+```bash
+make
+```
+Tento příkaz vytvoří v aktuálním adresáři spustitelný skript `ipk-rdt`.
+
+### Spuštění serveru (přijímač)
+Server naslouchá na zadaném portu a ukládá přijatá data do souboru nebo na standardní výstup.
+```bash
+./ipk-rdt -s -p <port> [-a <adresa>] [-o <soubor>] [-w <timeout>]
+```
+* `-s`: Spustí program v režimu server.
+* `-p <port>`: Číslo portu, na kterém bude server naslouchat.
+* `-a <adresa>`: (Volitelné) IP adresa, na kterou se má server nabindovat (např. `127.0.0.1` nebo `::1`).
+* `-o <soubor>`: (Volitelné) Cesta k souboru, kam se mají uložit přijatá data. Pokud není zadáno, data se vypíší na standardní výstup (stdout).
+* `-w <timeout>`: (Volitelné) Maximální doba čekání na pokrok v protokolu v sekundách (výchozí: 1).
+
+### Spuštění klienta (odesílatel)
+Klient naváže spojení se serverem a odešle data ze souboru nebo ze standardního vstupu.
+```bash
+./ipk-rdt -c -p <port> -a <host> [-i <soubor>] [-w <timeout>]
+```
+* `-c`: Spustí program v režimu klient.
+* `-p <port>`: Číslo portu, na kterém server naslouchat.
+* `-a <host>`: IP adresa nebo hostname serveru.
+* `-i <soubor>`: (Volitelné) Cesta k souboru, který se má odeslat. Pokud není zadáno, data se čtou ze standardního vstupu (stdin).
+* `-w <timeout>`: (Volitelné) Maximální doba čekání na pokrok v protokolu v sekundách (výchozí: 1).
+
+---
+
+## 11. Spuštění testů
 
 Součástí projektu je automatizovaný testovací skript `test_suite.py`, který ověřuje funkčnost protokolu v různých podmínkách (ztrátovost, duplikace, korupce paketů, reorder, IPv6).
 
@@ -124,7 +158,7 @@ make test
 ```
 Skript postupně provede sadu testovacích případů a na konci vypíše celkové skóre.
 
-## 11. Reference a zdroje
+## 12. Reference a zdroje
 
 Při implementaci byly využity následující zdroje:
 1. **RFC 768 (User Datagram Protocol):** https://datatracker.ietf.org/doc/html/rfc768
